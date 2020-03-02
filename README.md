@@ -18,7 +18,7 @@ given the user knows the issue reference
 7. [Authors](#authors)
 
 ## Usage
-
+```
 This tool can be used to log time spent on a specific Jira ticket on a project.
   -d string
     	OPTIONAL: The date on which the worklog effort was started in DD-MM-YYYY format. Default 02-03-2020
@@ -31,6 +31,7 @@ This tool can be used to log time spent on a specific Jira ticket on a project.
     	REQUIRED: Jira ticket reference. E.g. ABC-1
   -t string
     	REQUIRED: The time spent as days (#d), hours (#h), or minutes (#m or #). E.g. 8h
+```
 
 ## Requirements
 1. Atlassian account
