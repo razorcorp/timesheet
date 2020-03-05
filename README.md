@@ -21,16 +21,20 @@ given the user knows the issue reference
 ```
 This tool can be used to log time spent on a specific Jira ticket on a project.
   -d string
-    	OPTIONAL: The date on which the worklog effort was started in DD-MM-YYYY format. Default 02-03-2020
+        OPTIONAL: The date on which the worklog effort was started in DD-MM-YYYY format. Default 05-03-2020
   -e string
-    	HELP: Base64 encode the given credentials. Format: email:token;domain. e.g. example@example.com:abcThisIsFake;xyz.atlassian.net
-  -h	HELP: Print usage
+        HELP: Base64 encode the given credentials. Format: email:token;domain. e.g. example@example.com:abcThisIsFake;xyz.atlassian.net
+  -h    HELP: Print usage
+  -history
+        Print the timesheet of the day
   -m string
-    	OPTIONAL: A comment about the worklog
+        OPTIONAL: A comment about the worklog
   -r string
-    	REQUIRED: Jira ticket reference. E.g. ABC-1
+        REQUIRED: Jira ticket reference. E.g. DDSP-4
+  -remaining
+        Time remaining
   -t string
-    	REQUIRED: The time spent as days (#d), hours (#h), or minutes (#m or #). E.g. 8h
+        REQUIRED: The time spent as days (#d), hours (#h), or minutes (#m or #). E.g. 8h
 ```
 
 ## Requirements
