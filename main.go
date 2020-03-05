@@ -33,6 +33,8 @@ type App struct {
 	TimeSpent     string
 	Help          bool
 	Encode        string
+	TimeRemaining bool
+	History       bool
 	Configuration struct {
 		Auth   string
 		Domain string
@@ -56,6 +58,11 @@ func main() {
 
 	app.Parser()
 	app.loadConf()
+
+	if app.TimeRemaining {
+		app.GetTimeRemaining(app.Configuration.Domain, app.Configuration.Auth)
+		os.Exit(0)
+	}
 
 	LogTime(app.Ticket, app.TimeSpent, app.Started, app.Comment, app.Configuration.Domain, app.Configuration.Auth)
 
