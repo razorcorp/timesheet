@@ -32,6 +32,8 @@ func (app *App) Parser() {
 		"OPTIONAL: A comment about the worklog")
 	flag.StringVar(&app.Encode, "e", "", "HELP: Base64 encode the given credentials."+
 		" Format: email:token;domain. e.g. example@example.com:abcThisIsFake;xyz.atlassian.net")
+	flag.BoolVar(&app.TimeRemaining, "remaining", false, "Time remaining")
+	flag.BoolVar(&app.History, "history", false, "Print the timesheet of the day")
 	flag.Parse()
 	app.validate()
 }
@@ -41,6 +43,10 @@ func (app *App) validate() {
 		fmt.Println("This tool can be used to log time spent on a specific Jira ticket on a project.")
 		app.usage()
 		os.Exit(0)
+	}
+
+	if app.TimeRemaining {
+		return
 	}
 
 	if app.Encode != "" {
