@@ -65,5 +65,7 @@ func main() {
 	}
 
 	LogTime(app.Ticket, app.TimeSpent, app.Started, app.Comment, app.Configuration.Domain, app.Configuration.Auth)
+	app.TimeRemaining = true
+	app.GetTimeRemaining(app.Configuration.Domain, app.Configuration.Auth)
 
 }
