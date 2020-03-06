@@ -32,8 +32,9 @@ func (app *App) Parser() {
 		"OPTIONAL: A comment about the worklog")
 	flag.StringVar(&app.Encode, "e", "", "HELP: Base64 encode the given credentials."+
 		" Format: email:token;domain. e.g. example@example.com:abcThisIsFake;xyz.atlassian.net")
-	flag.BoolVar(&app.TimeRemaining, "remaining", false, "Print how many hour can be book for the current day.")
-	flag.BoolVar(&app.History, "history", false, "Print the timesheet of the day")
+	flag.BoolVar(&app.TimeRemaining, "remaining", false, "HELP: Print how many hour can be book for the current day." +
+		" -history and -d are also available")
+	flag.BoolVar(&app.History, "history", false, "HELP: Print the timesheet of the day")
 	flag.Parse()
 	app.validate()
 }
