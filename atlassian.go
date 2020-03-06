@@ -62,6 +62,7 @@ type WorkLogs struct {
 type Worklog struct {
 	TimeSpentSeconds int    `json:"timeSpentSeconds"`
 	IssueId          string `json:"issueId"`
+	Started          string `json:"started"`
 	Author           struct {
 		EmailAddress string `json:"emailAddress"`
 		DisplayName  string `json:"displayName"`
@@ -115,16 +116,18 @@ func (app *App) GetTimeRemaining(domain string, auth string) {
 	for _, wLog := range worklogs {
 		if wLog.Total > 0 {
 			for _, log := range wLog.Worklogs {
-				if log.Author.EmailAddress == userEmail {
-					if app.History {
-						fmt.Println("Timesheet history:")
-						fmt.Printf("\t%s: %s\n\t%s: %s\n\t%s: %s\n\t%s: %.2fh\n\n",
-							"Key", wLog.Key,
-							"Summary", wLog.Summary,
-							"Author", log.Author.DisplayName,
-							"Time spent", getInHours(log.TimeSpentSeconds))
+				if app.isDateMatch(log.Started) {
+					if log.Author.EmailAddress == userEmail {
+						if app.History {
+							fmt.Println("Timesheet history:")
+							fmt.Printf("\t%s: %s\n\t%s: %s\n\t%s: %s\n\t%s: %.2fh\n\n",
+								"Key", wLog.Key,
+								"Summary", wLog.Summary,
+								"Author", log.Author.DisplayName,
+								"Time spent", getInHours(log.TimeSpentSeconds))
+						}
+						totalTimeSpent += log.TimeSpentSeconds
 					}
-					totalTimeSpent += log.TimeSpentSeconds
 				}
 			}
 		}
