@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"regexp"
+	"strings"
 	"time"
 )
 
@@ -23,6 +24,10 @@ func (app *App) getTime() string {
 	return fmt.Sprintf("%s.000+0000", now.Format("15:04:05"))
 }
 
+func (app *App) getDate() string {
+	return strings.Split(app.Started, "T")[0]
+}
+
 func (app *App) getTimeFixed() string {
 	return "09:00:00.000+0000"
 }
@@ -34,7 +39,7 @@ func (app *App) isDateMatch(datetime string) bool {
 		panic(err)
 	}
 
-	if date.Format("2006-01-02") == time.Now().Format("2006-01-02") {
+	if date.Format("2006-01-02") == app.getDate() {
 		return true
 	}
 	return false

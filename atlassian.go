@@ -103,7 +103,7 @@ func (app *App) GetTimeRemaining(domain string, auth string) {
 	var totalTimeSpent int
 	var timeRemaining float64
 	userEmail, _ := basicAuth(auth)
-	issuesOfTheDay, iErr := getIssuesUpdatedToday(domain, auth)
+	issuesOfTheDay, iErr := getIssuesUpdatedToday(domain, auth, app.getDate())
 	if iErr != nil {
 		panic(iErr)
 	}
@@ -119,7 +119,7 @@ func (app *App) GetTimeRemaining(domain string, auth string) {
 				if app.isDateMatch(log.Started) {
 					if log.Author.EmailAddress == userEmail {
 						if app.History {
-							fmt.Println("Timesheet history:")
+							fmt.Printf("Timesheet history: (%s)\n", app.getDate())
 							fmt.Printf("\t%s: %s\n\t%s: %s\n\t%s: %s\n\t%s: %.2fh\n\n",
 								"Key", wLog.Key,
 								"Summary", wLog.Summary,
@@ -142,9 +142,9 @@ func (app *App) GetTimeRemaining(domain string, auth string) {
 
 }
 
-func getIssuesUpdatedToday(domain string, auth string) (*JiraSearchResult, error) {
+func getIssuesUpdatedToday(domain string, auth string, date string) (*JiraSearchResult, error) {
 	var client = &http.Client{}
-	var query = "jql=worklogDate%20>%3D%20startOfDay()%20AND%20worklogDate%20<%3D%20endOfDay()"
+	var query = fmt.Sprintf("jql=worklogDate%%20>%%3D%%20\"%s\"%%20AND%%20worklogDate%%20<%%3D%%20\"%s\"", date, date)
 	var url = fmt.Sprintf("https://%s/rest/api/3/search?%s", strings.TrimSuffix(domain, "\n"), query)
 	req, reqErr := http.NewRequest("GET", url, nil)
 	if reqErr != nil {

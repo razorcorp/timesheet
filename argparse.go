@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"regexp"
-	"time"
 )
 
 /**
@@ -16,10 +15,10 @@ import (
  * Created on: 29/02/2020 17:52
  */
 
-var dateFormat, _ = regexp.Compile("[0-9]{2}-[0-9]{2}-[0-9]{4}")
+var dateFormat, _ = regexp.Compile("[0-9]{4}-[0-9]{2}-[0-9]{2}")
 
 func (app *App) Parser() {
-	var day = time.Now().Format("02-01-2006")
+	app.Started = app.getDateTime()
 
 	flag.BoolVar(&app.Help, "h", false, "HELP: Print usage")
 	flag.StringVar(&app.Ticket, "r", "",
@@ -27,13 +26,14 @@ func (app *App) Parser() {
 	flag.StringVar(&app.TimeSpent, "t", "",
 		"REQUIRED: The time spent as days (#d), hours (#h), or minutes (#m or #). E.g. 8h")
 	flag.StringVar(&app.Started, "d", "",
-		fmt.Sprintf("OPTIONAL: The date on which the worklog effort was started in DD-MM-YYYY format. Default %s", day))
+		fmt.Sprintf("OPTIONAL: The date on which the worklog effort was started in YYYY-MM-DD format. Default %s", app.getDate()))
 	flag.StringVar(&app.Comment, "m", "",
 		"OPTIONAL: A comment about the worklog")
 	flag.StringVar(&app.Encode, "e", "", "HELP: Base64 encode the given credentials."+
 		" Format: email:token;domain. e.g. example@example.com:abcThisIsFake;xyz.atlassian.net")
-	flag.BoolVar(&app.TimeRemaining, "remaining", false, "Print how many hour can be book for the current day.")
-	flag.BoolVar(&app.History, "history", false, "Print the timesheet of the day")
+	flag.BoolVar(&app.TimeRemaining, "remaining", false, "HELP: Print how many hour can be book for the current day." +
+		" -history and -d are also available")
+	flag.BoolVar(&app.History, "history", false, "HELP: Print the timesheet of the day")
 	flag.Parse()
 	app.validate()
 }
