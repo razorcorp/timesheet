@@ -34,6 +34,7 @@ func (app *App) Parser() {
 	flag.BoolVar(&app.TimeRemaining, "remaining", false, "HELP: Print how many hour can be book for the current day."+
 		" -history and -d are also available")
 	flag.BoolVar(&app.History, "history", false, "HELP: Print the timesheet of the day")
+	flag.BoolVar(&app.PrintWeek, "week", false, "HELP: Print timesheet of the current week")
 	flag.Parse()
 	app.validate()
 }
@@ -45,11 +46,21 @@ func (app *App) validate() {
 		app.usage()
 	}
 
+	if app.Started != "" {
+		if !dateFormat.MatchString(app.Started) {
+			panic("provided date didn't match expected format. try -h for help")
+		} else {
+			app.Started = fmt.Sprintf("%sT%s", app.Started, app.getTimeFixed())
+		}
+	} else {
+		app.Started = app.getDateTime()
+	}
+
 	if app.Help {
 		app.usage()
 	}
 
-	if app.TimeRemaining {
+	if app.TimeRemaining || app.PrintWeek {
 		return
 	}
 
@@ -64,16 +75,6 @@ func (app *App) validate() {
 
 	if app.TimeSpent == "" {
 		panic(errors.New("no time given. -t"))
-	}
-
-	if app.Started != "" {
-		if !dateFormat.MatchString(app.Started) {
-			panic("provided date didn't match expected format. try -h for help")
-		} else {
-			app.Started = fmt.Sprintf("%sT%s", app.Started, app.getTimeFixed())
-		}
-	} else {
-		app.Started = app.getDateTime()
 	}
 }
 
