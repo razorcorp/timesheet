@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
 )
 
@@ -36,6 +38,7 @@ type App struct {
 	TimeRemaining bool
 	History       bool
 	PrintWeek     bool
+	Version       bool
 	Configuration struct {
 		Auth   string
 		Domain string
@@ -45,6 +48,35 @@ type App struct {
 type Application interface {
 	Parser()
 	CredentialEncode()
+	GetTimeRemaining(domain string, auth string)
+	GetWeekTimesheet(domain string, auth string)
+}
+
+var VERSION string
+
+func (app *App) upgrade() {
+	var client = &http.Client{}
+	req, rErr := http.NewRequest("GET", "https://api.github.com/repos/praveenprem/timesheet/releases/latest", nil)
+	if rErr != nil {
+		panic(rErr)
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+	var response struct {
+		Name string `json:"name"`
+		URL  string `json:"html_url"`
+	}
+	decodeErr := json.NewDecoder(resp.Body).Decode(&response)
+	if decodeErr != nil {
+		panic(decodeErr)
+	}
+
+	if fmt.Sprintf("v%s", VERSION) != response.Name {
+		fmt.Println("New version available! Please download the latest release from", response.URL)
+	}
 }
 
 func main() {
@@ -59,6 +91,7 @@ func main() {
 
 	app.Parser()
 	app.loadConf()
+	app.upgrade()
 
 	if app.TimeRemaining {
 		app.GetTimeRemaining(app.Configuration.Domain, app.Configuration.Auth)

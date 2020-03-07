@@ -4,8 +4,6 @@ TEST_REPORT = tests.xml
 GOARCH = amd64
 
 VERSION?=?
-COMMIT=\$(shell git rev-parse HEAD)
-BRANCH=\$(shell git rev-parse --abbrev-ref HEAD)
 
 # Symlink into GOPATH
 GITHUB_USERNAME=praveenprem
@@ -15,7 +13,7 @@ CURRENT_DIR=\$(shell pwd)
 BUILD_DIR_LINK=\$(shell readlink ${BUILD_DIR})
 
 # Setup the -ldflags option for go build here, interpolate the variable values
-LDFLAGS = -ldflags "-X main.VERSION=${VERSION} -X main.COMMIT=${COMMIT} -X main.BRANCH=${BRANCH}"
+LDFLAGS = -ldflags "-X main.VERSION=${VERSION}"
 
 # Build the project
 all: link clean test vet linux darwin windows

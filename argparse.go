@@ -35,6 +35,7 @@ func (app *App) Parser() {
 		" -history and -d are also available")
 	flag.BoolVar(&app.History, "history", false, "HELP: Print the timesheet of the day")
 	flag.BoolVar(&app.PrintWeek, "week", false, "HELP: Print timesheet of the current week")
+	flag.BoolVar(&app.Version, "v", false, "Print application version")
 	flag.Parse()
 	app.validate()
 }
@@ -44,6 +45,7 @@ func (app *App) validate() {
 	if len(os.Args[1:]) < 1 {
 		fmt.Printf("no arguments are given\n\n")
 		app.usage()
+		os.Exit(1)
 	}
 
 	if app.Started != "" {
@@ -58,6 +60,12 @@ func (app *App) validate() {
 
 	if app.Help {
 		app.usage()
+		os.Exit(0)
+	}
+
+	if app.Version {
+		fmt.Println(VERSION)
+		os.Exit(0)
 	}
 
 	if app.TimeRemaining || app.PrintWeek {
@@ -88,5 +96,4 @@ func (app *App) usage() {
 		"\ttimesheet -remaining -d 2020-03-05\n" +
 		"\ttimesheet -remaining -history\n" +
 		"\ttimesheet -remaining -history -d 2020-03-05\n")
-	os.Exit(1)
 }
