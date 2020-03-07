@@ -1,6 +1,6 @@
 # Timesheet
 
-This tool is written to help developer with logging work time to Atlassian Jira based projects.
+A commandline tool written to help developer with logging work time to Atlassian Jira based projects.
 
 This tool allows developers to add worklog to a specific ticket without having to browse and find issues
 given the user knows the issue reference
