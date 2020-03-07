@@ -36,6 +36,7 @@ type App struct {
 	TimeRemaining bool
 	History       bool
 	PrintWeek     bool
+	Version       bool
 	Configuration struct {
 		Auth   string
 		Domain string
@@ -48,6 +49,8 @@ type Application interface {
 	GetTimeRemaining(domain string, auth string)
 	GetWeekTimesheet(domain string, auth string)
 }
+
+var VERSION string
 
 func main() {
 	var app App

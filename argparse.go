@@ -35,6 +35,7 @@ func (app *App) Parser() {
 		" -history and -d are also available")
 	flag.BoolVar(&app.History, "history", false, "HELP: Print the timesheet of the day")
 	flag.BoolVar(&app.PrintWeek, "week", false, "HELP: Print timesheet of the current week")
+	flag.BoolVar(&app.Version, "v", false, "Print application version")
 	flag.Parse()
 	app.validate()
 }
@@ -58,6 +59,11 @@ func (app *App) validate() {
 
 	if app.Help {
 		app.usage()
+	}
+
+	if app.Version {
+		fmt.Println(VERSION)
+		os.Exit(0)
 	}
 
 	if app.TimeRemaining || app.PrintWeek {
