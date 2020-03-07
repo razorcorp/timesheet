@@ -45,6 +45,7 @@ func (app *App) validate() {
 	if len(os.Args[1:]) < 1 {
 		fmt.Printf("no arguments are given\n\n")
 		app.usage()
+		os.Exit(1)
 	}
 
 	if app.Started != "" {
@@ -59,6 +60,7 @@ func (app *App) validate() {
 
 	if app.Help {
 		app.usage()
+		os.Exit(0)
 	}
 
 	if app.Version {
@@ -94,5 +96,4 @@ func (app *App) usage() {
 		"\ttimesheet -remaining -d 2020-03-05\n" +
 		"\ttimesheet -remaining -history\n" +
 		"\ttimesheet -remaining -history -d 2020-03-05\n")
-	os.Exit(1)
 }
