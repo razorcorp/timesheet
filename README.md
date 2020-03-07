@@ -35,6 +35,9 @@ timesheet (-r -t [-d] [-m]] [[-h] [-e] [-d]) (-remaining [-history])
         HELP: Print how many hour can be book for the current day. -history and -d are also available
   -t string
         REQUIRED: The time spent as days (#d), hours (#h), or minutes (#m or #). E.g. 8h
+  -week
+    	HELP: Print timesheet of the current week
+
 Example:
         timesheet -r DDSP-XXXX -t 8h -m "Jenkins pipeline completed"
         timesheet -r DDSP-XXXX -t 1h -m "Investigated possible solutions" -d 2020-03-05
