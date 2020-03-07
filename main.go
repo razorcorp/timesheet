@@ -45,6 +45,8 @@ type App struct {
 type Application interface {
 	Parser()
 	CredentialEncode()
+	GetTimeRemaining(domain string, auth string)
+	GetWeekTimesheet(domain string, auth string)
 }
 
 func main() {
