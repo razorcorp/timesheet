@@ -19,22 +19,32 @@ given the user knows the issue reference
 
 ## Usage
 ```
-This tool can be used to log time spent on a specific Jira ticket on a project.
+timesheet (-r -t [-d] [-m]] [[-h] [-e] [-d]) (-remaining [-history])
   -d string
-    	OPTIONAL: The date on which the worklog effort was started in YYYY-MM-DD format. Default 2020-03-06
+        OPTIONAL: The date on which the worklog effort was started in YYYY-MM-DD format. Default 2020-03-06
   -e string
-    	HELP: Base64 encode the given credentials. Format: email:token;domain. e.g. example@example.com:abcThisIsFake;xyz.atlassian.net
-  -h	HELP: Print usage
+        HELP: Base64 encode the given credentials. Format: email:token;domain. e.g. example@example.com:abcThisIsFake;xyz.atlassian.net
+  -h    HELP: This tool can be used to log time spent on a specific Jira ticket on a project.
   -history
-    	HELP: Print the timesheet of the day
+        HELP: Print the timesheet of the day
   -m string
-    	OPTIONAL: A comment about the worklog
+        OPTIONAL: A comment about the worklog
   -r string
-    	REQUIRED: Jira ticket reference. E.g. DDSP-4
+        REQUIRED: Jira ticket reference. E.g. DDSP-4
   -remaining
-    	HELP: Print how many hour can be book for the current day. -history and -d are also available
+        HELP: Print how many hour can be book for the current day. -history and -d are also available
   -t string
-    	REQUIRED: The time spent as days (#d), hours (#h), or minutes (#m or #). E.g. 8h
+        REQUIRED: The time spent as days (#d), hours (#h), or minutes (#m or #). E.g. 8h
+  -week
+    	HELP: Print timesheet of the current week
+
+Example:
+        timesheet -r DDSP-XXXX -t 8h -m "Jenkins pipeline completed"
+        timesheet -r DDSP-XXXX -t 1h -m "Investigated possible solutions" -d 2020-03-05
+        timesheet -remaining
+        timesheet -remaining -d 2020-03-05
+        timesheet -remaining -history
+        timesheet -remaining -history -d 2020-03-05
 ```
 
 ## Requirements

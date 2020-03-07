@@ -35,6 +35,7 @@ type App struct {
 	Encode        string
 	TimeRemaining bool
 	History       bool
+	PrintWeek     bool
 	Configuration struct {
 		Auth   string
 		Domain string
@@ -61,6 +62,11 @@ func main() {
 
 	if app.TimeRemaining {
 		app.GetTimeRemaining(app.Configuration.Domain, app.Configuration.Auth)
+		os.Exit(0)
+	}
+
+	if app.PrintWeek {
+		app.GetWeekTimesheet(app.Configuration.Domain, app.Configuration.Auth)
 		os.Exit(0)
 	}
 
