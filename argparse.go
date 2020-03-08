@@ -64,7 +64,8 @@ func (app *App) validate() {
 	}
 
 	if app.Version {
-		fmt.Println(VERSION)
+		fmt.Printf(SIGNATURE)
+		fmt.Println("Version:", VERSION)
 		os.Exit(0)
 	}
 
