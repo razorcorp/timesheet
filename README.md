@@ -69,29 +69,29 @@ _add this to the `.bash_profile` to preserver it_
  
 ## Installation
 
-1. Download the binary file from the repository
+1. Download the binary file from the repository's latest release.
 ```
-https://github.com/praveenprem/timesheet
+https://github.com/praveenprem/timesheet/releases
 ```
 
-2. Give application execution permission
+2. Give application execution permission.
 ```bash
 $ sudo chmod +x ./timesheet
 ```
 
-3. Install on the system path
+3. Install on the system path.
 ```bash
 install ./timesheet /usr/local/bin/timesheet
 ```
 
 ## Build
 
-1. Clone the repository to your local GO path
+1. Clone the repository to your local GO path.
 ```bash
 $ git clone git@github.com:praveenprem/timesheet.git
 ```
 
-1. Run Makefile to build the application
+1. Run Makefile to build the application.
 ```bash
 $ make build
 ```
