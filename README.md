@@ -36,7 +36,7 @@ timesheet (-r -t [-d] [-m]] [[-h] [-e] [-d]) (-remaining [-history])
   -t string
         REQUIRED: The time spent as days (#d), hours (#h), or minutes (#m or #). E.g. 8h
   -week
-    	HELP: Print timesheet of the current week
+    	HELP: Print timesheet of the current week. -d is also available to change the week
 
 Example:
         timesheet -r DDSP-XXXX -t 8h -m "Jenkins pipeline completed"
