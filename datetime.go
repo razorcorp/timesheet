@@ -63,7 +63,11 @@ func (app *App) isDateBetween(datetime string, start time.Time, end time.Time) b
 }
 
 func (app *App) getWeek() (time.Time, time.Time) {
-	var now = time.Now()
+	//var now = time.Now()
+	var now, err = time.Parse("2006-01-02", app.getDate())
+	if err != nil {
+		panic(err)
+	}
 	var weekBegin time.Time
 	var weekEnd time.Time
 	var dayPos = int(now.Weekday())
