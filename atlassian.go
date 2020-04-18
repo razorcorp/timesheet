@@ -68,6 +68,7 @@ type Worklog struct {
 		EmailAddress string `json:"emailAddress"`
 		DisplayName  string `json:"displayName"`
 	} `json:"author"`
+	Comment *Comment `json:"comment"`
 }
 
 type WeekLog struct {
