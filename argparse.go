@@ -70,7 +70,7 @@ func (app *App) validate() {
 		os.Exit(0)
 	}
 
-	if app.TimeRemaining || app.PrintWeek {
+	if app.TimeRemaining || app.PrintWeek || app.History {
 		return
 	}
 

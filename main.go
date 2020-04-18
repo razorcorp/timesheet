@@ -48,6 +48,7 @@ type Application interface {
 	Parser()
 	CredentialEncode()
 	GetTimeRemaining(domain string, auth string)
+	GetHistory()
 	GetWeekTimesheet(domain string, auth string)
 }
 
@@ -94,6 +95,11 @@ func main() {
 
 	if app.TimeRemaining {
 		app.GetTimeRemaining(app.Configuration.Domain, app.Configuration.Auth)
+		os.Exit(0)
+	}
+
+	if app.History {
+		app.GetHistory()
 		os.Exit(0)
 	}
 
