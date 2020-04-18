@@ -17,22 +17,26 @@ import (
 func (app *App) Parser() {
 	app.Started = app.getDateTime()
 
-	flag.BoolVar(&app.Help, "h", false, "HELP: This tool can be used to log time spent on a specific Jira ticket on a project.")
+	flag.BoolVar(&app.Help, "h", false,
+		"HELP: This tool can be used to log time spent on a specific Jira ticket on a project.")
 	flag.StringVar(&app.Ticket, "r", "",
 		"REQUIRED: Jira ticket reference. E.g. DDSP-4")
 	flag.StringVar(&app.TimeSpent, "t", "",
 		"REQUIRED: The time spent as days (#d), hours (#h), or minutes (#m or #). E.g. 8h")
 	flag.StringVar(&app.Started, "d", "",
-		fmt.Sprintf("OPTIONAL: The date on which the worklog effort was started in YYYY-MM-DD format. Default %s", app.getDate()))
+		fmt.Sprintf("Default %s. The date on which the worklog effort was started in full date (YYYY-MM-DD) or"+
+			" relative date (-N) format. eg: 2006-01-02 or -1.", app.getDate()))
 	flag.StringVar(&app.Comment, "m", "",
 		"OPTIONAL: A comment about the worklog")
-	flag.StringVar(&app.Encode, "e", "", "HELP: Base64 encode the given credentials."+
-		" Format: email:token;domain. e.g. example@example.com:abcThisIsFake;xyz.atlassian.net")
-	flag.BoolVar(&app.TimeRemaining, "remaining", false, "HELP: Print how many hour can be book for the current day."+
-		" -history and -d are also available")
-	flag.BoolVar(&app.History, "history", false, "HELP: Print the timesheet of the day")
-	flag.BoolVar(&app.PrintWeek, "week", false, "HELP: Print timesheet of the current week." +
-		" -d is also available to change the week")
+	flag.StringVar(&app.Encode, "e", "",
+		"HELP: Base64 encode the given credentials."+
+			" Format: email:token;domain. e.g. example@example.com:abcThisIsFake;xyz.atlassian.net")
+	flag.BoolVar(&app.TimeRemaining, "remaining", false,
+		"HELP: Print how many hour can be book for the current day. -d is also available")
+	flag.BoolVar(&app.History, "history", false,
+		"HELP: Print the timesheet of the day -d is also available to change the week")
+	flag.BoolVar(&app.PrintWeek, "week", false,
+		"HELP: Print timesheet of the current week. -d is also available to change the week")
 	flag.BoolVar(&app.Version, "v", false, "Print application version")
 	flag.Parse()
 	app.validate()
@@ -92,13 +96,13 @@ func (app *App) validate() {
 }
 
 func (app *App) usage() {
-	fmt.Printf("timesheet (-r -t [-d] [-m]] [[-h] [-e] [-d]) (-remaining [-history])\n")
+	fmt.Printf("timesheet (-r -t [-d] [-m]] [[-h] [-e] [-d]) ([-remaining] [-history])\n")
 	flag.PrintDefaults()
 	fmt.Printf("Example:\n" +
 		"\ttimesheet -r DDSP-XXXX -t 8h -m \"Jenkins pipeline completed\"\n" +
 		"\ttimesheet -r DDSP-XXXX -t 1h -m \"Investigated possible solutions\" -d 2020-03-05\n" +
 		"\ttimesheet -remaining\n" +
 		"\ttimesheet -remaining -d 2020-03-05\n" +
-		"\ttimesheet -remaining -history\n" +
-		"\ttimesheet -remaining -history -d 2020-03-05\n")
+		"\ttimesheet -history\n" +
+		"\ttimesheet -history -d -1\n")
 }
