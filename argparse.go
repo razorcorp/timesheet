@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"regexp"
 )
 
 /**
@@ -14,8 +13,6 @@ import (
  * Created by: Praveen Premaratne
  * Created on: 29/02/2020 17:52
  */
-
-var dateFormat, _ = regexp.Compile("[0-9]{4}-[0-9]{2}-[0-9]{2}")
 
 func (app *App) Parser() {
 	app.Started = app.getDateTime()
@@ -50,10 +47,16 @@ func (app *App) validate() {
 	}
 
 	if app.Started != "" {
-		if !dateFormat.MatchString(app.Started) {
-			panic("provided date didn't match expected format. try -h for help")
-		} else {
+		if len(RelativeDateFormat.FindStringSubmatch(app.Started)) > 0 {
+			relativeTime, err := app.GetDateFromRelative()
+			if err != nil {
+				panic(err)
+			}
+			app.Started = fmt.Sprintf("%sT%s", relativeTime.Format(YmdFormat), app.getTimeFixed())
+		} else if DateFormat.MatchString(app.Started) {
 			app.Started = fmt.Sprintf("%sT%s", app.Started, app.getTimeFixed())
+		} else {
+			panic("provided date didn't match expected format. try -h for help")
 		}
 	} else {
 		app.Started = app.getDateTime()
