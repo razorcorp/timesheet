@@ -16,17 +16,17 @@ BUILD_DIR_LINK=\$(shell readlink ${BUILD_DIR})
 LDFLAGS = -ldflags "-X main.VERSION=${VERSION}"
 
 # Build the project
-all: link clean test vet linux darwin windows
+# all: link clean test vet linux darwin windows
 
-link:
-	BUILD_DIR=${BUILD_DIR}; \
-	BUILD_DIR_LINK=${BUILD_DIR_LINK}; \
-	CURRENT_DIR=${CURRENT_DIR}; \
-	if [ "${BUILD_DIR_LINK}" != "${CURRENT_DIR}" ]; then \
-	    echo "Fixing symlinks for build"; \
-	    rm -f ${BUILD_DIR}; \
-	    ln -s ${CURRENT_DIR} ${BUILD_DIR}; \
-	fi
+#link:
+#	BUILD_DIR=${BUILD_DIR}; \
+#	BUILD_DIR_LINK=${BUILD_DIR_LINK}; \
+#	CURRENT_DIR=${CURRENT_DIR}; \
+#	if [ "${BUILD_DIR_LINK}" != "${CURRENT_DIR}" ]; then \
+#	    echo "Fixing symlinks for build"; \
+#	    rm -f ${BUILD_DIR}; \
+#	    ln -s ${CURRENT_DIR} ${BUILD_DIR}; \
+#	fi
 
 linux:
 	GOOS=linux GOARCH=${GOARCH} go build ${LDFLAGS} -o ${BIN_DIR}/${BINARY}-linux-${GOARCH} .
@@ -59,12 +59,12 @@ fmt:
 	go fmt \$$(go list ./... | grep -v /vendor/) ; \
 	cd - >/dev/null
 
-deps:
-	go get gopkg.in/go-ini/ini.v1
+# deps:
+# 	go get gopkg.in/go-ini/ini.v1
 
-clean:
-	-rm -f ${TEST_REPORT}
-	-rm -f ${VET_REPORT}
-	-rm -f ${BINARY}-*
+# clean:
+# 	-rm -f ${TEST_REPORT}
+# 	-rm -f ${VET_REPORT}
+# 	-rm -f ${BINARY}-*
 
-.PHONY: link linux darwin windows test vet fmt clean
+.PHONY: build
