@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -15,14 +16,21 @@ import (
  * Created on: 02/03/2020 21:50
  */
 
+var (
+	DateFormat, _      = regexp.Compile(`[0-9]{4}-[0-9]{2}-[0-9]{2}`)
+	RelativeDateFormat = regexp.MustCompile(`(?P<Operator>[\-|\+])(?P<Days>[0-9])`)
+	YmdFormat = "2006-01-02"
+	HmsFormat = "15:04:05"
+)
+
 func (app *App) getDateTime() string {
 	var now = time.Now()
-	return fmt.Sprintf("%sT%s", now.Format("2006-01-02"), app.getTime())
+	return fmt.Sprintf("%sT%s", now.Format(YmdFormat), app.getTime())
 }
 
 func (app *App) getTime() string {
 	var now = time.Now()
-	return fmt.Sprintf("%s.000+0000", now.Format("15:04:05"))
+	return fmt.Sprintf("%s.000+0000", now.Format(HmsFormat))
 }
 
 func (app *App) getDate() string {
@@ -35,12 +43,12 @@ func (app *App) getTimeFixed() string {
 
 func (app *App) isDateMatch(datetime string) bool {
 	dateExpr, _ := regexp.Compile("([0-9]{4}-[0-9]{2}-[0-9]{2})")
-	date, err := time.Parse("2006-01-02", dateExpr.FindString(datetime))
+	date, err := time.Parse(YmdFormat, dateExpr.FindString(datetime))
 	if err != nil {
 		panic(err)
 	}
 
-	if date.Format("2006-01-02") == app.getDate() {
+	if date.Format(YmdFormat) == app.getDate() {
 		return true
 	}
 	return false
@@ -63,8 +71,7 @@ func (app *App) isDateBetween(datetime string, start time.Time, end time.Time) b
 }
 
 func (app *App) getWeek() (time.Time, time.Time) {
-	//var now = time.Now()
-	var now, err = time.Parse("2006-01-02", app.getDate())
+	var now, err = time.Parse(YmdFormat, app.getDate())
 	if err != nil {
 		panic(err)
 	}
@@ -78,6 +85,22 @@ func (app *App) getWeek() (time.Time, time.Time) {
 	return weekBegin, weekEnd
 }
 
+func (app *App) GetDateFromRelative() (*time.Time, error) {
+	var now = time.Now()
+	var date time.Time
+	match := RelativeDateFormat.FindStringSubmatch(app.Started)
+	numDays := toInt(match[2])
+
+	if match[1] == "-" {
+		date = now.AddDate(0, 0, -numDays)
+	} else if match[1] == "+" {
+		date = now.AddDate(0, 0, +numDays)
+	} else {
+		return nil, errors.New("invalid operation given")
+	}
+	return &date, nil
+}
+
 func fullDay(date time.Time) (time.Time, time.Time) {
 	yeah, month, day := date.Date()
 	return time.Date(yeah, month, day, 0, 0, 0, 0, date.Location()), time.Date(yeah, month, day, 23, 59, 59, 0, date.Location())
@@ -89,7 +112,7 @@ func getInHours(seconds int) float64 {
 
 func getDateOfWeek(datetime string) string {
 	dateExpr, _ := regexp.Compile("([0-9]{4}-[0-9]{2}-[0-9]{2})")
-	date, err := time.Parse("2006-01-02", dateExpr.FindString(datetime))
+	date, err := time.Parse(YmdFormat, dateExpr.FindString(datetime))
 	if err != nil {
 		panic(err)
 	}

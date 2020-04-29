@@ -68,6 +68,7 @@ type Worklog struct {
 		EmailAddress string `json:"emailAddress"`
 		DisplayName  string `json:"displayName"`
 	} `json:"author"`
+	Comment *Comment `json:"comment"`
 }
 
 type WeekLog struct {
@@ -132,24 +133,16 @@ func (app *App) GetTimeRemaining(domain string, auth string) {
 		panic(iErr)
 	}
 
-	worklogs, wErr := issuesOfTheDay.getWorklogs(domain, auth)
+	workLogs, wErr := issuesOfTheDay.getWorklogs(domain, auth)
 	if wErr != nil {
 		panic(wErr)
 	}
 
-	for _, wLog := range worklogs {
+	for _, wLog := range workLogs {
 		if wLog.Total > 0 {
 			for _, log := range wLog.Worklogs {
 				if app.isDateMatch(log.Started) {
 					if log.Author.EmailAddress == userEmail {
-						if app.History {
-							fmt.Printf("Timesheet history: (%s)\n", app.getDate())
-							fmt.Printf("\t%s: %s\n\t%s: %s\n\t%s: %s\n\t%s: %.2fh\n\n",
-								"Key", wLog.Key,
-								"Summary", wLog.Summary,
-								"Author", log.Author.DisplayName,
-								"Time spent", getInHours(log.TimeSpentSeconds))
-						}
 						totalTimeSpent += log.TimeSpentSeconds
 					}
 				}
@@ -163,6 +156,44 @@ func (app *App) GetTimeRemaining(domain string, auth string) {
 	} else {
 		fmt.Printf("You've %.2f hours ramaining!\n", timeRemaining)
 	}
+
+}
+
+func (app *App) GetHistory() {
+	var totalTimeSpent int
+	userEmail, _ := basicAuth(app.Configuration.Auth)
+	issuesOfTheDay, iErr := getIssuesUpdatedToday(app.Configuration.Domain, app.Configuration.Auth, app.getDate())
+	if iErr != nil {
+		panic(iErr)
+	}
+
+	workLogs, wErr := issuesOfTheDay.getWorklogs(app.Configuration.Domain, app.Configuration.Auth)
+	if wErr != nil {
+		panic(wErr)
+	}
+
+	fmt.Printf("Timesheet history: (%s):\n", app.getDate())
+
+	for _, wLog := range workLogs {
+		if wLog.Total > 0 {
+			for _, log := range wLog.Worklogs {
+				if app.isDateMatch(log.Started) {
+					if log.Author.EmailAddress == userEmail {
+						fmt.Printf("\t%s:\n\t\t%s: %s\n\t\t%s: %s\n\t\t%s: %s\n\t\t%s: %.2fh\n\n",
+							wLog.Key,
+							"Summary", wLog.Summary,
+							"Author", log.Author.DisplayName,
+							"Comment", log.Comment.Content[0].Content[0].Text,
+							"Time spent", getInHours(log.TimeSpentSeconds),
+						)
+						totalTimeSpent += log.TimeSpentSeconds
+					}
+				}
+			}
+		}
+	}
+
+	fmt.Println(fmt.Sprintf("Total %.1fh", getInHours(totalTimeSpent)))
 
 }
 
