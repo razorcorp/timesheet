@@ -478,11 +478,15 @@ func (w *WeekLog) print() {
 			}
 		}
 		fmt.Printf("| %-15s ", issue)
-		for _, v := range daysOfWeek {
-			if day[v][0] == 0 {
+		for _, dDay := range daysOfWeek {
+			var dDayTotal int
+			for _, dDayTime := range day[dDay] {
+				dDayTotal += dDayTime
+			}
+			if dDayTotal == 0 {
 				fmt.Printf("| %-10s ", "")
 			} else {
-				fmt.Printf("| %-10.1f ", getInHours(day[v][0]))
+				fmt.Printf("| %-10.1f ", getInHours(dDayTotal))
 			}
 		}
 		fmt.Println("|")
