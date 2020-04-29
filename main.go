@@ -7,8 +7,7 @@ import (
 	"os"
 )
 
-/**
-
+var SIGNATURE = `
 ******************************************
 *                                        *
 *      ********         ********         *
@@ -22,11 +21,11 @@ import (
 ******************************************
          ** Praveen Premaratne **
 
- * Package name: main
  * Project name: timesheet
  * Created by: Praveen Premaratne
  * Created on: 29/02/2020 17:51
-*/
+
+`
 
 type App struct {
 	Ticket        string
