@@ -38,6 +38,7 @@ func (app *App) Parser() {
 	flag.BoolVar(&app.PrintWeek, "week", false,
 		"HELP: Print timesheet of the current week. -d is also available to change the week")
 	flag.BoolVar(&app.Version, "v", false, "Print application version")
+	flag.BoolVar(&app.Update, "update", false, "Check for update and download updates")
 	flag.Parse()
 	app.validate()
 }
@@ -77,7 +78,7 @@ func (app *App) validate() {
 		os.Exit(0)
 	}
 
-	if app.TimeRemaining || app.PrintWeek || app.History {
+	if app.TimeRemaining || app.PrintWeek || app.History || app.Update {
 		return
 	}
 
