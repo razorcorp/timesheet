@@ -18,7 +18,7 @@ import (
 
 var (
 	DateFormat, _      = regexp.Compile(`[0-9]{4}-[0-9]{2}-[0-9]{2}`)
-	RelativeDateFormat = regexp.MustCompile(`(?P<Operator>[\-|\+])(?P<Days>[0-9]+)`)
+	RelativeDateFormat = regexp.MustCompile(`^(?P<Operator>[\-|\+])(?P<Days>[0-9]+)`)
 	YmdFormat          = "2006-01-02"
 	HmsFormat          = "15:04:05"
 )
