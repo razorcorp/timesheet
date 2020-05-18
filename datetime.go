@@ -126,3 +126,21 @@ func toInt(s string) int {
 	}
 	return int(value)
 }
+func (app *App) getMonth() (time.Time, time.Time, map[int][]time.Time) {
+	var weekNumbers = make(map[int][]time.Time)
+	var start, end time.Time
+	var now, err = time.Parse(YmdFormat, app.getDate())
+	if err != nil {
+		panic(err)
+	}
+
+	start = time.Date(now.Year(), now.Month(), 1, now.Hour(), 0, 0, 0, now.Location())
+	end = time.Date(now.Year(), now.Month()+1, 0, 0, 0, 0, 0, now.Location())
+	for i := start.Day(); i <= end.Day(); i++ {
+		tmpDate := time.Date(now.Year(), now.Month(), i, 0, 0, 0, 0, now.Location())
+		_, wNumber := tmpDate.ISOWeek()
+		weekNumbers[wNumber] = append(weekNumbers[wNumber], tmpDate)
+	}
+
+	return start, end, weekNumbers
+}
