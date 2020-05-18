@@ -37,6 +37,7 @@ type App struct {
 	TimeRemaining bool
 	History       bool
 	PrintWeek     bool
+	PrintMonth    bool
 	Version       bool
 	Configuration struct {
 		Auth   string
@@ -50,6 +51,7 @@ type Application interface {
 	GetTimeRemaining(domain string, auth string)
 	GetHistory()
 	GetWeekTimesheet(domain string, auth string)
+	GetMonthTimesheet(domain string, auth string)
 }
 
 var VERSION string
@@ -107,6 +109,11 @@ func main() {
 
 	if app.PrintWeek {
 		app.GetWeekTimesheet(app.Configuration.Domain, app.Configuration.Auth)
+		os.Exit(0)
+	}
+
+	if app.PrintMonth {
+		app.GetMonthTimesheet(app.Configuration.Domain, app.Configuration.Auth)
 		os.Exit(0)
 	}
 

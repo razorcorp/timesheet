@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"sort"
 	"strings"
+	"time"
 )
 
 /**
@@ -18,79 +20,95 @@ import (
 
 var secondsInDay = 28800
 
-type TimeLog struct {
-	Started   string   `json:"started"`
-	TimeSpent string   `json:"timeSpent"`
-	Comment   *Comment `json:"comment"`
-}
+type (
+	TimeLog struct {
+		Started   string   `json:"started"`
+		TimeSpent string   `json:"timeSpent"`
+		Comment   *Comment `json:"comment"`
+	}
 
-type Comment struct {
-	Version     int    `json:"version"`
-	CommentType string `json:"type"`
-	Content     []*Doc `json:"content"`
-}
+	Comment struct {
+		Version     int    `json:"version"`
+		CommentType string `json:"type"`
+		Content     []*Doc `json:"content"`
+	}
 
-type Doc struct {
-	ContentType string       `json:"type"`
-	Content     []*Paragraph `json:"content"`
-}
-type Paragraph struct {
-	Text     string `json:"text"`
-	TextType string `json:"type"`
-}
+	Doc struct {
+		ContentType string       `json:"type"`
+		Content     []*Paragraph `json:"content"`
+	}
 
-type Response struct {
-	ErrorMessages []string `json:"errorMessages"`
-}
+	Paragraph struct {
+		Text     string `json:"text"`
+		TextType string `json:"type"`
+	}
 
-type JiraSearchResult struct {
-	Issues []struct {
-		Id     string `json:"id"`
-		Key    string `json:"key"`
-		Fields struct {
-			Summary string `json:"summary"`
-		} `json:"fields"`
-	} `json:"issues"`
-}
+	Response struct {
+		ErrorMessages []string `json:"errorMessages"`
+	}
 
-type WorkLogs struct {
-	Key      string
-	Summary  string
-	Total    int       `json:"total"`
-	Worklogs []Worklog `json:"worklogs"`
-}
+	JiraSearchResult struct {
+		StartAt    int `json:"startAt"`
+		MaxResults int `json:"maxResults"`
+		Total      int `json:"total"`
+		Issues     []struct {
+			Id     string `json:"id"`
+			Key    string `json:"key"`
+			Fields struct {
+				Summary string `json:"summary"`
+			} `json:"fields"`
+		} `json:"issues"`
+	}
 
-type Worklog struct {
-	TimeSpentSeconds int    `json:"timeSpentSeconds"`
-	IssueId          string `json:"issueId"`
-	Started          string `json:"started"`
-	Author           struct {
-		EmailAddress string `json:"emailAddress"`
-		DisplayName  string `json:"displayName"`
-	} `json:"author"`
-	Comment *Comment `json:"comment"`
-}
+	WorkLogs struct {
+		Key      string
+		Summary  string
+		Total    int       `json:"total"`
+		Worklogs []Worklog `json:"worklogs"`
+	}
 
-type WeekLog struct {
-	Total  int
-	Issues []Issue
-}
+	Worklog struct {
+		TimeSpentSeconds int    `json:"timeSpentSeconds"`
+		IssueId          string `json:"issueId"`
+		Started          string `json:"started"`
+		Author           struct {
+			EmailAddress string `json:"emailAddress"`
+			DisplayName  string `json:"displayName"`
+		} `json:"author"`
+		Comment *Comment `json:"comment"`
+	}
 
-type Issue struct {
-	Key  string
-	Logs []DayLog
-}
+	WeekLog struct {
+		Total  int
+		Issues []Issue
+	}
 
-type DayLog struct {
-	Total     int
-	WeekDay   string
-	TimeSpent int
-}
+	Issue struct {
+		Key  string
+		Logs []DayLog
+	}
 
-type Week struct {
-	Total int
-	Days  map[string]map[string][]int
-}
+	DayLog struct {
+		Total     int
+		WeekDay   string
+		TimeSpent int
+	}
+
+	Week struct {
+		Total int
+		Days  map[string]map[string][]int
+	}
+
+	NumberWeek struct {
+		Week
+		Number int
+	}
+
+	Month struct {
+		Total int
+		Weeks []NumberWeek
+	}
+)
 
 var daysOfWeek = []string{"Monday", "Tuesday", "Wednesday", "Thursday", "Friday"}
 
@@ -236,6 +254,36 @@ func (app *App) GetWeekTimesheet(domain string, auth string) {
 	weekLog.print()
 }
 
+func (app *App) GetMonthTimesheet(domain string, auth string) {
+	var month Month
+
+	userEmail, _ := basicAuth(auth)
+	start, end, weekNumbers := app.getMonth()
+
+	issuesOfTheMonth, iErr := getIssuesUpdatedBetweenDays(domain, auth,
+		start.Format("2006-01-02"), end.Format("2006-01-02"))
+	if iErr != nil {
+		panic(iErr)
+	}
+
+	worklogs, wErr := issuesOfTheMonth.getWorklogs(domain, auth)
+	if wErr != nil {
+		panic(wErr)
+	}
+
+	for wNum, dates := range weekNumbers {
+		weekLog := app.filterByDates(filterByUser(userEmail, worklogs), dates[0], dates[len(dates)-1])
+		sortedWeek := weekLog.sort()
+		month.Total += weekLog.Total
+		var numWeek NumberWeek
+		numWeek.Week = sortedWeek
+		numWeek.Number = wNum
+		month.Weeks = append(month.Weeks, numWeek)
+	}
+
+	month.print()
+}
+
 func getIssuesUpdatedToday(domain string, auth string, date string) (*JiraSearchResult, error) {
 	var client = &http.Client{}
 	var query = fmt.Sprintf("jql=worklogDate%%20>%%3D%%20\"%s\"%%20AND%%20worklogDate%%20<%%3D%%20\"%s\"", date, date)
@@ -264,25 +312,37 @@ func getIssuesUpdatedToday(domain string, auth string, date string) (*JiraSearch
 }
 
 func getIssuesUpdatedBetweenDays(domain string, auth string, start string, end string) (*JiraSearchResult, error) {
-	var query = fmt.Sprintf("jql=worklogDate%%20>%%3D%%20\"%s\"%%20AND%%20worklogDate%%20<%%3D%%20\"%s\"", start, end)
-	var url = fmt.Sprintf("https://%s/rest/api/3/search?%s", strings.TrimSuffix(domain, "\n"), query)
+	var result JiraSearchResult
 
-	var headers []struct {
-		key   string
-		value string
+	for true {
+		var query = fmt.Sprintf("startAt=%d&maxResults=50&jql=worklogDate%%20>%%3D%%20\"%s\"%%20AND%%20worklogDate%%20<%%3D%%20\"%s\"", result.StartAt, start, end)
+		var url = fmt.Sprintf("https://%s/rest/api/3/search?%s", strings.TrimSuffix(domain, "\n"), query)
+
+		var headers []struct {
+			key   string
+			value string
+		}
+
+		headers = append(headers, struct {
+			key   string
+			value string
+		}{key: "Content-Type", value: "application/json"})
+		var response = new(JiraSearchResult)
+		decodeErr := json.NewDecoder(httpReq("GET", url, auth, nil, headers).Body).Decode(&response)
+		if decodeErr != nil {
+			panic(decodeErr)
+		}
+		result.StartAt += response.MaxResults
+		result.MaxResults = response.MaxResults
+		result.Total = response.Total
+		for _, issue := range response.Issues {
+			result.Issues = append(result.Issues, issue)
+		}
+		if result.StartAt >= result.Total {
+			break
+		}
 	}
-
-	headers = append(headers, struct {
-		key   string
-		value string
-	}{key: "Content-Type", value: "application/json"})
-
-	var response = new(JiraSearchResult)
-	decodeErr := json.NewDecoder(httpReq("GET", url, auth, nil, headers).Body).Decode(&response)
-	if decodeErr != nil {
-		panic(decodeErr)
-	}
-	return response, nil
+	return &result, nil
 }
 
 func (issues *JiraSearchResult) getWorklogs(domain string, auth string) ([]WorkLogs, error) {
@@ -421,8 +481,8 @@ func (w *Week) sum() Week {
 		for _, d := range daysOfWeek {
 			if times, found := days[d]; !found {
 				sum := 0
-				for _, time := range times {
-					sum += time
+				for _, t := range times {
+					sum += t
 				}
 				days[d] = []int{sum}
 			}
@@ -495,13 +555,157 @@ func (w *WeekLog) print() {
 
 	for i := 0; i <= 83; i++ {
 		if i == 0 {
-			fmt.Printf(" ")
+			fmt.Printf("|")
 		} else if i == 83 {
-			fmt.Printf(" \n")
+			fmt.Printf("|\n")
+		} else if i == 18 || i == 31 || i == 44 || i == 57 || i == 70 {
+			fmt.Printf("|")
 		} else {
-			fmt.Printf("-")
+			fmt.Printf("_")
 		}
 	}
 
 	fmt.Println(fmt.Sprintf("Total %.1fh", getInHours(weekSorted.Total)))
+}
+
+func filterByUser(userEmail string, worklogs []WorkLogs) []WorkLogs {
+	var userLogs []WorkLogs
+	for _, wLog := range worklogs {
+		i := WorkLogs{
+			Key:     wLog.Key,
+			Summary: wLog.Summary,
+			Total:   wLog.Total,
+		}
+		for _, log := range wLog.Worklogs {
+			if log.Author.EmailAddress == userEmail {
+				i.Worklogs = append(i.Worklogs, log)
+			}
+		}
+		if len(i.Worklogs) > 0 {
+			userLogs = append(userLogs, i)
+		}
+	}
+	return userLogs
+}
+
+func (app *App) filterByDates(worklogs []WorkLogs, start time.Time, end time.Time) WeekLog {
+	var weekLog WeekLog
+	for _, wLog := range worklogs {
+		var issue = Issue{
+			Key: wLog.Key,
+		}
+		if wLog.Total > 0 {
+			for _, log := range wLog.Worklogs {
+				if app.isDateBetween(log.Started, start, end) {
+					var dayLog DayLog
+					dayLog.WeekDay = getDateOfWeek(log.Started)
+					dayLog.TimeSpent = log.TimeSpentSeconds
+					weekLog.Total += log.TimeSpentSeconds
+					issue.Logs = append(issue.Logs, dayLog)
+				}
+			}
+		}
+
+		if len(issue.Logs) > 0 {
+			weekLog.Issues = append(weekLog.Issues, issue)
+		}
+	}
+	return weekLog
+}
+
+func (m *Month) print() {
+	var month = make(map[int]map[string]int)
+	for _, week := range m.Weeks {
+		month[week.Number] = make(map[string]int)
+		for _, day := range week.Days {
+			for _, dow := range daysOfWeek {
+				for _, t := range day[dow] {
+					month[week.Number][dow] += t
+				}
+			}
+		}
+	}
+
+	for i := 0; i <= 92; i++ {
+		if i == 0 {
+			fmt.Printf(" ")
+		} else if i == 92 {
+			fmt.Printf("\n")
+		} else {
+			fmt.Printf("_")
+		}
+	}
+
+	fmt.Printf("| %-10s ", "WK Number")
+	for _, title := range daysOfWeek {
+		fmt.Printf("| %-10s ", title)
+	}
+	fmt.Printf("| %-10s ", "WK Total(h)")
+	fmt.Printf("|\n")
+	for i := 0; i <= 91; i++ {
+		if i == 0 {
+			fmt.Printf("|")
+		} else if i == 13 || i == 26 || i == 39 || i == 52 || i == 65 || i == 78 {
+			fmt.Printf("|")
+		} else if i == 91 {
+			fmt.Printf("_|\n")
+		} else {
+			fmt.Printf("_")
+		}
+	}
+
+	var index []int
+	for key, _ := range month {
+		index = append(index, key)
+	}
+
+	sort.Ints(index)
+
+	var processedWeeks int
+	for _, i := range index {
+		week := i
+		days := month[i]
+		var weekTotal = 0
+		if processedWeeks > 0 {
+			for i := 0; i <= 91; i++ {
+				if i == 0 {
+					fmt.Printf("|")
+				} else if i == 13 || i == 26 || i == 39 || i == 52 || i == 65 || i == 78 {
+					fmt.Printf("|")
+				} else if i == 91 {
+					fmt.Printf("_|\n")
+				} else {
+					fmt.Printf("_")
+				}
+			}
+		}
+		fmt.Printf("| %-10d ", week)
+		for _, day := range daysOfWeek {
+			if days[day] == 0 {
+				fmt.Printf("| %-10s ", "")
+			} else {
+				weekTotal += days[day]
+				fmt.Printf("| %-10.1f ", getInHours(days[day]))
+			}
+		}
+		fmt.Printf("| %-11.1f |\n", getInHours(weekTotal))
+		processedWeeks += 1
+	}
+
+	for i := 0; i <= 91; i++ {
+		if i == 0 {
+			fmt.Printf("|")
+		} else if i == 13 || i == 26 || i == 39 || i == 52 || i == 65 || i == 78 {
+			fmt.Printf("|")
+		} else if i == 91 {
+			fmt.Printf("_|\n")
+		} else {
+			fmt.Printf("_")
+		}
+	}
+
+	fmt.Println(fmt.Sprintf("%74s(h) | %-12.1f|", "Total", getInHours(m.Total)))
+	fmt.Println(fmt.Sprintf("%77s |-------------|", ""))
+	fmt.Println(fmt.Sprintf("%77s | %-12.1f|", "Days", getInHours(m.Total)/8))
+	fmt.Println(fmt.Sprintf("%78s -------------", ""))
 }
